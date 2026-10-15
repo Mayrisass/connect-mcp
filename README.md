@@ -360,29 +360,6 @@ will run in anonymous/unauthenticated mode instead of erroring, which can
 look like a working-but-oddly-limited connection rather than a config
 mistake.
 
-## Supported chains
-
-`connect_get_chains` (REST: `GET /chains`) is the source of truth and needs no key. As of 2026-10-14 it lists these mainnets, each with `lookup` and `drop` enabled:
-
-| Chain | Chain ID | Native token |
-| ----- | -------- | ------------ |
-| Ethereum | 1 | ETH |
-| Base | 8453 | ETH |
-| Polygon | 137 | POL |
-| OP Mainnet | 10 | ETH |
-| Arbitrum One | 42161 | ETH |
-| Avalanche | 43114 | AVAX |
-| World Chain | 480 | ETH |
-| Monad | 143 | MON |
-| Robinhood Chain | 4663 | ETH |
-| Solana | 1399811149 | SOL |
-
-World Chain Sepolia (`4801`) is also listed, as a testnet.
-
-- Social handles resolve on every chain: EVM chains pay the recipient's `ethWalletAddress`, Solana pays their `solWalletAddress`.
-- `connect_drop` sends native tokens when `tokenContract` is omitted. For an ERC-20 or SPL token you pass its contract address or mint.
-- **Balance coverage depends on the chain.** `connect_drop_balance` returns the native balance everywhere. ERC-20 balances come from a per-chain provider: Moralis on Monad and Base, Blockscout on Robinhood Chain, and other chains may return only native plus featured tokens. Zero balances are omitted, spam tokens can appear, and a token the provider doesn't index can be missing. If you know its contract address you can still send it by passing `tokenContract`.
-
 ## Tools
 
 
@@ -397,7 +374,7 @@ World Chain Sepolia (`4801`) is also listed, as a testnet.
 | `connect_scores_by_username` | Scores by Connect username                                |
 | `connect_me`                 | API key owner profile, scores, and linked accounts — **API key only** |
 | `connect_drop`               | Smart Send (EVM batch or Solana SOL/SPL); accepts `trustFilter` to gate recipients by trust graph — **API key only** |
-| `connect_drop_balance`       | Smart Send wallet balances on a chain — **API key only**. Token coverage varies by chain, see [Supported chains](#supported-chains) |
+| `connect_drop_balance`       | Smart Send wallet balances on a chain — **API key only**  |
 | `connect_trust_create`       | Create an on-chain trust attestation (EAS on Base) — **API key only** |
 | `connect_trust_check`        | Check whether identities sit in a trust graph at depth 1 |
 | `connect_trust_graph`        | List outgoing/incoming trust edges for an identity |
