@@ -67,7 +67,7 @@ export function registerTools(server: McpServer, client: ConnectClient): void {
     'connect_get_chains',
     {
       title: 'List Supported Chains',
-      description: 'List product chains with per-feature compatibility. lookup is true for EVM catalog chains and Solana; drop is true for Smart Send EVM chains and Solana (chainId 1399811149 for connect_drop / connect_drop_balance).',
+      description: 'List product chains with per-feature compatibility. lookup is true for EVM catalog chains and Solana; drop is true for Smart Send chains, enabled delegation chains, and Solana (chainId 1399811149 for connect_drop / connect_drop_balance).',
       inputSchema: {},
       annotations: { title: 'List Supported Chains', ...READ_ONLY },
     },
@@ -195,7 +195,7 @@ export function registerTools(server: McpServer, client: ConnectClient): void {
     'connect_drop_balance',
     {
       title: 'Check Smart Send Balance',
-      description: 'Get native and token balances for the API key owner Smart Send embedded wallet on a chain. Always call before connect_drop. Zero balances are omitted, so a missing token means balance 0. ' +
+      description: 'Get native and token balances for the API key owner embedded wallet. Accepts Smart Send chains and enabled delegation chains. Robinhood Chain (4663) returns ERC-20 balances from Blockscout. Monad (143) returns ERC-20 balances from Moralis; other delegation chains return native plus featured tokens. Always call before connect_drop. Zero balances are omitted, so a missing token means balance 0. ' +
       'EVM: confirm native gas plus the ERC-20 being sent. ' +
       'Solana (chainId 1399811149): SOL in this response is spendable lamports on the wallet pubkey (rent locked in existing token accounts is not included). Native SOL drop to a recipient without an existing funded account: amount itself must be ≥ 890880 lamports and sender SOL must cover amount + ~5000 lamports fee. SPL drop: token balance ≥ total amount, and SOL ≥ tx fee + ~2039280 lamports (~0.002039 SOL) per recipient that may need a new Associated Token Account — even when sending USDC. Insufficient SOL for ATA rent fails before the token transfer.',
       inputSchema: dropBalanceInputSchema,
