@@ -44,7 +44,7 @@ Then ask your agent:
       "type": "github",
       "value": "justinquidli",
       "ethWalletAddress": "0x6a48ADE3bE3F9f0b8B4c9af61Bb654A219311699",
-      "solWalletAddress": "8vo1awED98mwqDa4qR9JyMsk7qJYiwnTSG4EnXGyWXRh"
+      "solWalletAddress": "9DD2CqPKZJoo7ZRgCXxJNMjhzfgVihSKtkZpn8qnEWK9"
     }
   ]
 }
