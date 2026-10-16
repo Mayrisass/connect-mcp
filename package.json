@@ -1,7 +1,7 @@
 {
   "name": "@quidli/connect-mcp",
   "version": "0.6.6",
-  "description": "Onchain reputation and identity for AI agents: score onchain reputation across social accounts, resolve handles to EVM and Solana wallet addresses, and send tokens on EVM chains and Solana from any MCP client.",
+  "description": "Onchain reputation and identity for AI agents: score onchain reputation across social accounts, resolve handles to EVM and Solana wallet addresses, and make agent payments in USDC from any MCP client.",
   "keywords": [
     "mcp",
     "mcp-server",
@@ -84,7 +84,7 @@
   "publishConfig": {
     "access": "public"
   },
-  "mcpName": "io.github.quidli/connect-mcp",
+  "mcpName": "io.github.Quidli/connect-mcp",
   "bugs": {
     "url": "https://github.com/Quidli/connect-mcp/issues"
   }
