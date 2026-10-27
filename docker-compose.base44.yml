@@ -1,0 +1,70 @@
+name: quidli-connect-mcp
+
+services:
+  mcp:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    working_dir: /workspace
+    restart: on-failure
+    environment:
+      - CONNECT_MCP_HTTP_HOST=0.0.0.0
+      - CONNECT_MCP_HTTP_PORT=8080
+      # The hosted gate only serves keyless tool calls when this is on.
+      - CONNECT_MCP_ALLOW_ANONYMOUS=1
+      - BASE44_PREVIEW_MODE
+      - NPM_CONFIG_UPDATE_NOTIFIER=false
+      - NPM_CONFIG_FUND=false
+    volumes:
+      - .:/workspace
+      - mcp_node_modules:/workspace/node_modules
+    # Dependencies are baked into the image at /opt/deps. On first start (or
+    # when package-lock.json changes) they are copied into the node_modules
+    # volume, because the source bind mount would otherwise hide it.
+    command:
+      - sh
+      - -ec
+      - |
+        if [ ! -f node_modules/.base44-install-stamp ] || [ package-lock.json -nt node_modules/.base44-install-stamp ]; then
+          find node_modules -mindepth 1 -maxdepth 1 -exec rm -rf {} + 2>/dev/null || true
+          cp -a /opt/deps/node_modules/. node_modules/
+          touch node_modules/.base44-install-stamp
+        fi
+        exec node_modules/.bin/tsx watch --clear-screen=false src/index-http.ts
+    # The SDK validates the Host header against a fixed allowlist, so the
+    # probe must send Host: localhost (fetch cannot override the Host header).
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - node -e "require('http').get({host:'127.0.0.1',port:8080,path:'/health',headers:{Host:'localhost'}},r=>process.exit(r.statusCode===200?0:1)).on('error',()=>process.exit(1))"
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 90s
+    labels:
+      base44.project: "Quidli Connect MCP"
+      base44.kind: "api"
+
+  web:
+    image: nginx:1.27-alpine
+    restart: on-failure
+    ports:
+      - "3000:80"
+    volumes:
+      - ./nginx.base44.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      mcp:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    labels:
+      base44.project: "Quidli Connect MCP"
+      base44.kind: "web"
+      base44.port: "3000"
+
+volumes:
+  mcp_node_modules:
