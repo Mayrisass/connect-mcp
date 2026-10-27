@@ -1,0 +1,63 @@
+name: quidli-connect-mcp
+
+services:
+  mcp:
+    build:
+      context: "${BASE44_PROJECT_ROOT}"
+      dockerfile: "${BASE44_PROJECT_ROOT}/Dockerfile.base44"
+    working_dir: /workspace
+    restart: on-failure
+    environment:
+      - CONNECT_MCP_HTTP_HOST=0.0.0.0
+      - CONNECT_MCP_HTTP_PORT=8080
+      # The hosted gate only serves keyless tool calls when this is on.
+      - CONNECT_MCP_ALLOW_ANONYMOUS=1
+      - BASE44_PREVIEW_MODE
+      - NPM_CONFIG_UPDATE_NOTIFIER=false
+      - NPM_CONFIG_FUND=false
+    volumes:
+      - "${BASE44_PROJECT_ROOT}:/workspace"
+      - mcp_node_modules:/workspace/node_modules
+    # Dependencies were installed at image build time into /opt/deps; the
+    # bind mount hides them from /workspace, so seed the node_modules volume
+    # from the image copy on first start (or when the lockfile changes).
+    command:
+      - sh
+      - -ec
+      - |
+        if [ ! -f node_modules/.base44-install-stamp ] || [ package-lock.json -nt node_modules/.base44-install-stamp ]; then
+          find node_modules -mindepth 1 -maxdepth 1 -exec rm -rf {} +
+          cp -a /opt/deps/node_modules/. node_modules/
+          touch node_modules/.base44-install-stamp
+        fi
+        exec node_modules/.bin/tsx watch src/index-http.ts
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - "fetch('http://localhost:8080/health').then(r => r.ok ? process.exit(0) : process.exit(1)).catch(() => process.exit(1))"
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+
+  web:
+    image: nginx:1.27-alpine
+    restart: on-failure
+    ports:
+      - "3000:80"
+    volumes:
+      - "${BASE44_PROJECT_ROOT}/nginx.base44.conf:/etc/nginx/nginx.conf:ro"
+    depends_on:
+      mcp:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 10s
+
+volumes:
+  mcp_node_modules:
